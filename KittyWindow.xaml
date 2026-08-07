@@ -1,0 +1,200 @@
+<Window x:Class="PCHealthDashboard.KittyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+        Title="PC Health Popup" Height="440" Width="340"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" WindowStartupLocation="Manual"
+        MouseDown="Window_MouseDown">
+
+    <Border CornerRadius="14" BorderBrush="#2a3444" BorderThickness="1" ClipToBounds="True">
+        <Border.Background>
+            <SolidColorBrush Color="#0d1117" Opacity="0.92"/>
+        </Border.Background>
+
+        <Grid Margin="0">
+            <!-- Title Bar -->
+            <Grid Height="36" VerticalAlignment="Top" Margin="14,6,14,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🖥" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="PC Health Dashboard" Foreground="#e2e8f0" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="PinButton" Content="📌" FontSize="11" Background="Transparent" Foreground="#94a3b8" BorderThickness="0" Padding="5,1" Cursor="Hand" Click="PinButton_Click" ToolTip="Ghim/Bỏ ghim"/>
+                    <Button Content="✕" FontSize="12" Background="Transparent" Foreground="#94a3b8" BorderThickness="0" Padding="5,1" Cursor="Hand" Click="ClosePopup_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Content -->
+            <StackPanel Margin="14,42,14,14">
+                
+                <!-- Health Score Section -->
+                <Border Background="#151b26" CornerRadius="10" Padding="12,10" Margin="0,0,0,8" BorderBrush="#1e293b" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="45"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Circular Gauge (own series, synced from code) -->
+                        <Grid Grid.Column="0" Width="52" Height="52">
+                            <lvc:PieChart x:Name="PopupHealthChart" InitialRotation="-90" Background="Transparent" LegendPosition="Hidden" TooltipPosition="Hidden" Margin="-3"/>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock x:Name="GaugeScoreText" Text="0" Foreground="White" FontSize="17" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="/100" Foreground="#475569" FontSize="8" HorizontalAlignment="Center" Margin="0,-2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Health Info -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                            <TextBlock Text="Health Score" Foreground="#94a3b8" FontSize="10"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,3">
+                                <TextBlock x:Name="ScoreValueText" Text="0" Foreground="#4ade80" FontSize="17" FontWeight="Bold"/>
+                                <TextBlock Text=" / 100" Foreground="#475569" FontSize="12" VerticalAlignment="Bottom" Margin="3,0,0,1"/>
+                            </StackPanel>
+                            <Border Background="#0d2818" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="5" Height="5" Fill="#4ade80" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="StatusLabel" Text="Excellent" Foreground="#4ade80" FontSize="9" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Bongo Cat -->
+                        <Viewbox Grid.Column="2" Width="40" Height="40" VerticalAlignment="Center">
+                            <Canvas Width="100" Height="80">
+                                <Path Data="M 20 70 L 30 35 Q 35 30 45 33 Q 60 25 75 33 Q 85 30 90 35 L 100 70" Stroke="#a855f7" StrokeThickness="3" Fill="Transparent"/>
+                                <Path Data="M 30 70 C 30 55 50 55 50 70" Stroke="#a855f7" StrokeThickness="3" Fill="#151b26"/>
+                                <Path Data="M 70 70 C 70 55 90 55 90 70" Stroke="#a855f7" StrokeThickness="3" Fill="#151b26"/>
+                                <Ellipse Canvas.Left="42" Canvas.Top="48" Width="5" Height="5" Fill="#a855f7"/>
+                                <Ellipse Canvas.Left="73" Canvas.Top="48" Width="5" Height="5" Fill="#a855f7"/>
+                                <Path Data="M 55 55 Q 60 59 65 55" Stroke="#a855f7" StrokeThickness="2" Fill="Transparent"/>
+                                <Line X1="90" Y1="18" X2="86" Y2="26" Stroke="#4ade80" StrokeThickness="2.5" StrokeEndLineCap="Round"/>
+                                <Line X1="100" Y1="14" X2="96" Y2="24" Stroke="#4ade80" StrokeThickness="2.5" StrokeEndLineCap="Round"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Grid>
+                </Border>
+
+                <!-- CPU -->
+                <Border Background="#151b26" CornerRadius="8" Padding="10,8" Margin="0,0,0,5" BorderBrush="#1e293b" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="22"/>
+                            <ColumnDefinition Width="48"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="38"/>
+                            <ColumnDefinition Width="14"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="⚡" FontSize="11" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="CPU" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="PopupCpuTemp" Foreground="#64748b" FontSize="9"/>
+                        </StackPanel>
+                        <ProgressBar Grid.Column="2" x:Name="PopupCpuBar" Maximum="100" Height="5" Foreground="#3b82f6" Background="#1e293b" BorderThickness="0" VerticalAlignment="Center" Margin="8,0"/>
+                        <TextBlock Grid.Column="3" x:Name="PopupCpuPct" Foreground="#e2e8f0" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <Ellipse Grid.Column="4" Width="7" Height="7" x:Name="CpuDot" Fill="#4ade80" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <!-- GPU -->
+                <Border Background="#151b26" CornerRadius="8" Padding="10,8" Margin="0,0,0,5" BorderBrush="#1e293b" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="22"/>
+                            <ColumnDefinition Width="48"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="38"/>
+                            <ColumnDefinition Width="14"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="🎮" FontSize="11" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="GPU" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="PopupGpuTemp" Foreground="#64748b" FontSize="9"/>
+                        </StackPanel>
+                        <ProgressBar Grid.Column="2" x:Name="PopupGpuBar" Maximum="100" Height="5" Foreground="#a855f7" Background="#1e293b" BorderThickness="0" VerticalAlignment="Center" Margin="8,0"/>
+                        <TextBlock Grid.Column="3" x:Name="PopupGpuPct" Foreground="#e2e8f0" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <Ellipse Grid.Column="4" Width="7" Height="7" x:Name="GpuDot" Fill="#4ade80" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <!-- RAM -->
+                <Border Background="#151b26" CornerRadius="8" Padding="10,8" Margin="0,0,0,5" BorderBrush="#1e293b" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="22"/>
+                            <ColumnDefinition Width="72"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="38"/>
+                            <ColumnDefinition Width="14"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="🧠" FontSize="11" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="RAM" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="PopupRamDetail" Foreground="#64748b" FontSize="9"/>
+                        </StackPanel>
+                        <ProgressBar Grid.Column="2" x:Name="PopupRamBar" Maximum="100" Height="5" Foreground="#4ade80" Background="#1e293b" BorderThickness="0" VerticalAlignment="Center" Margin="8,0"/>
+                        <TextBlock Grid.Column="3" x:Name="PopupRamPct" Foreground="#e2e8f0" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <Ellipse Grid.Column="4" Width="7" Height="7" x:Name="RamDot" Fill="#4ade80" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <!-- Storage -->
+                <Border Background="#151b26" CornerRadius="8" Padding="10,8" Margin="0,0,0,5" BorderBrush="#1e293b" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="22"/>
+                            <ColumnDefinition Width="72"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="38"/>
+                            <ColumnDefinition Width="14"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="💾" FontSize="11" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Storage" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="PopupStorageDetail" Foreground="#64748b" FontSize="9"/>
+                        </StackPanel>
+                        <ProgressBar Grid.Column="2" x:Name="PopupStorageBar" Maximum="100" Height="5" Foreground="#f59e0b" Background="#1e293b" BorderThickness="0" VerticalAlignment="Center" Margin="8,0"/>
+                        <TextBlock Grid.Column="3" x:Name="PopupStoragePct" Foreground="#e2e8f0" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <Ellipse Grid.Column="4" Width="7" Height="7" x:Name="StorageDot" Fill="#4ade80" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <!-- Network with mini sparkline -->
+                <Border Background="#151b26" CornerRadius="8" Padding="10,8" Margin="0,0,0,10" BorderBrush="#1e293b" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="22"/>
+                            <ColumnDefinition Width="55"/>
+                            <ColumnDefinition Width="105"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="📡" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="Network" Foreground="White" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,5,0">
+                            <TextBlock x:Name="PopupDownloadText" Text="↓ 0 Mbps" Foreground="#64748b" FontSize="9" VerticalAlignment="Center"/>
+                            <TextBlock Text="|" Foreground="#334155" FontSize="9" Margin="5,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="PopupUploadText" Text="↑ 0 Mbps" Foreground="#64748b" FontSize="9" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Mini sparkline waveform -->
+                        <lvc:CartesianChart Grid.Column="3" x:Name="PopupPingChart" Height="20" Background="Transparent" TooltipPosition="Hidden" Margin="0,0,8,0"/>
+                        
+                        <Ellipse Grid.Column="4" Width="7" Height="7" x:Name="NetDot" Fill="#4ade80" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <!-- Footer Status -->
+                <Border Background="#0d1a12" CornerRadius="6" Padding="10,6">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="✅" FontSize="10" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="FooterText" Text="All systems are running smoothly." Foreground="#94a3b8" FontSize="10" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
