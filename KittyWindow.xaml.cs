@@ -33,7 +33,8 @@ public partial class KittyWindow : Window
                 InnerRadius = 35,
                 MaxRadialColumnWidth = 8,
                 HoverPushout = 0,
-                Fill = new SolidColorPaint(SKColor.Parse("#4ade80"))
+                Fill = new SolidColorPaint(SKColor.Parse("#4ade80")),
+                AnimationsSpeed = TimeSpan.Zero
             },
             new PieSeries<ObservableValue>
             {
@@ -41,7 +42,8 @@ public partial class KittyWindow : Window
                 InnerRadius = 35,
                 MaxRadialColumnWidth = 8,
                 HoverPushout = 0,
-                Fill = new SolidColorPaint(SKColor.Parse("#1e293b"))
+                Fill = new SolidColorPaint(SKColor.Parse("#1e293b")),
+                AnimationsSpeed = TimeSpan.Zero
             }
         };
 
@@ -54,7 +56,8 @@ public partial class KittyWindow : Window
                 GeometrySize = 0,
                 Stroke = new SolidColorPaint(SKColor.Parse("#06b6d4")) { StrokeThickness = 1.5f },
                 Fill = null,
-                LineSmoothness = 0.6
+                LineSmoothness = 0.6,
+                AnimationsSpeed = TimeSpan.Zero
             }
         };
         PopupPingChart.XAxes = new[] { new Axis { IsVisible = false } };
@@ -89,8 +92,8 @@ public partial class KittyWindow : Window
 
         // ── Health Score ──
         int score = vm.HealthScore;
-        _healthValue.Value = score;
-        _remainingValue.Value = Math.Max(0, 100 - score);
+        if (_healthValue.Value != score) _healthValue.Value = score;
+        if (_remainingValue.Value != Math.Max(0, 100 - score)) _remainingValue.Value = Math.Max(0, 100 - score);
         GaugeScoreText.Text = score.ToString();
         ScoreValueText.Text = score.ToString();
         StatusLabel.Text = score >= 80 ? "Excellent" : score >= 60 ? "Good" : score >= 40 ? "Warning" : "Critical";
@@ -102,10 +105,13 @@ public partial class KittyWindow : Window
         CpuDot.Fill = GetStatusBrush(vm.CpuUsage);
 
         // ── GPU ──
-        PopupGpuTemp.Text = $"{vm.GpuTemp:F0}°C";
-        PopupGpuBar.Value = vm.GpuUsage;
-        PopupGpuPct.Text = $"{vm.GpuUsage:F0}%";
-        GpuDot.Fill = GetStatusBrush(vm.GpuUsage);
+        float gpuTemp = vm.HasGpu1 ? vm.Gpu1Temp : vm.Gpu0Temp;
+        float gpuUsage = vm.HasGpu1 ? vm.Gpu1Usage : vm.Gpu0Usage;
+        
+        PopupGpuTemp.Text = $"{gpuTemp:F0}°C";
+        PopupGpuBar.Value = gpuUsage;
+        PopupGpuPct.Text = $"{gpuUsage:F0}%";
+        GpuDot.Fill = GetStatusBrush(gpuUsage);
 
         // ── RAM ──
         float ramPct = vm.RamTotal > 0 ? (vm.RamUsed / vm.RamTotal) * 100f : 0;

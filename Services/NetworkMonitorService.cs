@@ -16,6 +16,27 @@ public class NetworkMonitorService
     private long _lastBytesReceived;
     private long _lastBytesSent;
     private DateTime _lastTime;
+    private NetworkInterface[]? _cachedInterfaces;
+    private DateTime _lastInterfaceCheck;
+
+    private NetworkInterface[] GetActiveInterfaces()
+    {
+        if (_cachedInterfaces == null || (DateTime.UtcNow - _lastInterfaceCheck).TotalSeconds > 10)
+        {
+            try
+            {
+                _cachedInterfaces = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(i => i.OperationalStatus == OperationalStatus.Up && i.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                    .ToArray();
+            }
+            catch
+            {
+                _cachedInterfaces = Array.Empty<NetworkInterface>();
+            }
+            _lastInterfaceCheck = DateTime.UtcNow;
+        }
+        return _cachedInterfaces;
+    }
 
     public async Task<(long Latency, double PacketLoss, double DownloadMbps, double UploadMbps)> GetNetworkStatusAsync()
     {
@@ -40,15 +61,15 @@ public class NetworkMonitorService
         long currentBytesReceived = 0;
         long currentBytesSent = 0;
         
-        foreach (var interfaceObj in NetworkInterface.GetAllNetworkInterfaces())
+        foreach (var interfaceObj in GetActiveInterfaces())
         {
-            if (interfaceObj.OperationalStatus == OperationalStatus.Up && 
-                interfaceObj.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+            try
             {
                 var stats = interfaceObj.GetIPStatistics();
                 currentBytesReceived += stats.BytesReceived;
                 currentBytesSent += stats.BytesSent;
             }
+            catch { }
         }
 
         double downloadMbps = 0;

@@ -4,7 +4,7 @@
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         xmlns:vm="clr-namespace:PCHealthDashboard.ViewModels"
         Title="PC Health Dashboard" Height="820" Width="1300"
-        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        WindowStyle="None" AllowsTransparency="False" Background="#0f111a"
         WindowStartupLocation="CenterScreen"
         MouseDown="Window_MouseDown">
     
@@ -12,32 +12,41 @@
         <vm:MainViewModel/>
     </Window.DataContext>
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
     <Border CornerRadius="12" Background="#0f111a" BorderBrush="#1C2230" BorderThickness="1" ClipToBounds="True">
-        <Grid>
-            <!-- Main Content Area -->
-            <Grid Margin="25">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <Grid Margin="25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-                <!-- Top Bar -->
-                <Grid Grid.Row="0" Margin="0,0,0,20">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="🖥 PC Health" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,0,15,0"/>
-                        <TextBlock Text="Dashboard" Foreground="#AAA" FontSize="20" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button Content="Customize" Foreground="#ccc" Background="#1a202c" BorderThickness="0" Padding="12,6" Margin="0,0,10,0" Cursor="Hand"/>
-                        <Button Content="─" Foreground="#ccc" Background="Transparent" BorderThickness="0" FontSize="14" Click="MinimizeButton_Click" Cursor="Hand" Padding="10,0" ToolTip="Thu nhỏ"/>
-                        <Button Content="✕" Foreground="#ccc" Background="Transparent" BorderThickness="0" FontSize="16" Click="CloseButton_Click" Cursor="Hand" Padding="10,0" ToolTip="Đóng"/>
-                    </StackPanel>
-                </Grid>
+            <!-- Top Bar -->
+            <Grid Grid.Row="0" Margin="0,0,0,15">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🖥 PC Health" Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,0,15,0"/>
+                    <TextBlock Text="Dashboard" Foreground="#AAA" FontSize="20" FontWeight="SemiBold"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="Customize" Foreground="#ccc" Background="#1a202c" BorderThickness="0" Padding="12,6" Margin="0,0,10,0" Cursor="Hand"/>
+                    <Button Content="─" Foreground="#ccc" Background="Transparent" BorderThickness="0" FontSize="14" Click="MinimizeButton_Click" Cursor="Hand" Padding="10,0" ToolTip="Thu nhỏ"/>
+                    <Button Content="✕" Foreground="#ccc" Background="Transparent" BorderThickness="0" FontSize="16" Click="CloseButton_Click" Cursor="Hand" Padding="10,0" ToolTip="Đóng"/>
+                </StackPanel>
+            </Grid>
 
-                <!-- Top Cards -->
-                <Grid Grid.Row="1" Margin="0,0,0,20">
+            <!-- Main Scrollable Area -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Top Cards -->
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
                     <Grid.Style>
                         <Style TargetType="Grid">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -52,6 +61,7 @@
                         <ColumnDefinition Width="1.4*"/>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
@@ -119,29 +129,44 @@
                         <StackPanel>
                             <TextBlock Text="CPU" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding CpuTemp, StringFormat={}{0:F0}°C}" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,10,0"/>
-                                <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}%}" Foreground="#888" FontSize="13" VerticalAlignment="Bottom" Margin="0,0,0,3"/>
+                                <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}%}" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding CpuTemp, StringFormat={}{0:F0}°C}" Foreground="#888" FontSize="13" VerticalAlignment="Bottom" Margin="0,0,0,3"/>
                             </StackPanel>
                             <ProgressBar Value="{Binding CpuUsage}" Maximum="100" Width="80" HorizontalAlignment="Left" Height="4" Foreground="#3b82f6" Background="#1C2230" BorderThickness="0" Margin="0,15,0,0"/>
                         </StackPanel>
                     </Border>
                     
-                    <!-- GPU Card -->
+                    <!-- GPU 0 Card -->
                     <Border Grid.Column="2" Background="#151b26" CornerRadius="10" Padding="15" Margin="0,0,10,0">
                         <StackPanel>
-                            <TextBlock Text="GPU" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding Gpu0Name}" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding GpuTemp, StringFormat={}{0:F0}°C}" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,10,0"/>
-                                <TextBlock Text="{Binding GpuUsage, StringFormat={}{0:F0}%}" Foreground="#888" FontSize="13" VerticalAlignment="Bottom" Margin="0,0,0,3"/>
+                                <TextBlock Text="{Binding Gpu0Usage, StringFormat={}{0:F0}%}" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding Gpu0Temp, StringFormat={}{0:F0}°C}" Foreground="#888" FontSize="13" VerticalAlignment="Bottom" Margin="0,0,0,3"/>
                             </StackPanel>
-                            <ProgressBar Value="{Binding GpuUsage}" Maximum="100" Width="80" HorizontalAlignment="Left" Height="4" Foreground="#a855f7" Background="#1C2230" BorderThickness="0" Margin="0,15,0,0"/>
+                            <ProgressBar Value="{Binding Gpu0Usage}" Maximum="100" Width="80" HorizontalAlignment="Left" Height="4" Foreground="#a855f7" Background="#1C2230" BorderThickness="0" Margin="0,15,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- GPU 1 Card -->
+                    <Border Grid.Column="3" Background="#151b26" CornerRadius="10" Padding="15" Margin="0,0,10,0" Visibility="{Binding HasGpu1, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Gpu1Name}" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Gpu1Usage, StringFormat={}{0:F0}%}" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding Gpu1Temp, StringFormat={}{0:F0}°C}" Foreground="#888" FontSize="13" VerticalAlignment="Bottom" Margin="0,0,0,3"/>
+                            </StackPanel>
+                            <ProgressBar Value="{Binding Gpu1Usage}" Maximum="100" Width="80" HorizontalAlignment="Left" Height="4" Foreground="#ef4444" Background="#1C2230" BorderThickness="0" Margin="0,15,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <!-- RAM Card -->
-                    <Border Grid.Column="3" Background="#151b26" CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                    <Border Grid.Column="4" Background="#151b26" CornerRadius="10" Padding="15" Margin="0,0,10,0">
                         <StackPanel>
-                            <TextBlock Text="RAM" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
+                            <Grid Margin="0,0,0,5">
+                                <TextBlock Text="RAM" Foreground="#AAA" FontSize="13" VerticalAlignment="Center"/>
+                                <Button Content="Empty Standby List" Command="{Binding FreeRamCommand}" Foreground="#4ade80" Background="Transparent" BorderThickness="0" FontSize="11" HorizontalAlignment="Right" Cursor="Hand" ToolTip="Dọn dẹp Standby List và RAM cache"/>
+                            </Grid>
                             <TextBlock Foreground="White" FontSize="18" FontWeight="Bold">
                                 <TextBlock.Text>
                                     <MultiBinding StringFormat="{}{0:F1} / {1:F0} GB">
@@ -155,16 +180,22 @@
                     </Border>
 
                     <!-- Storage Card -->
-                    <Border Grid.Column="4" Background="#151b26" CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                    <Border Grid.Column="5" Background="#151b26" CornerRadius="10" Padding="15" Margin="0,0,10,0">
                         <StackPanel>
-                            <TextBlock Text="Storage" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
-                            <TextBlock Text="{Binding SsdFreeSpace, StringFormat={}{0:F0} GB}" Foreground="White" FontSize="18" FontWeight="Bold"/>
+                            <Grid Margin="0,0,0,5">
+                                <TextBlock Text="Storage" Foreground="#AAA" FontSize="13" VerticalAlignment="Center"/>
+                                <Button Content="CleanDisk" Command="{Binding OpenStorageCleanerCommand}" Foreground="#f59e0b" Background="Transparent" BorderThickness="0" FontSize="11" HorizontalAlignment="Right" Cursor="Hand" ToolTip="Dọn dẹp rác và file trùng lặp"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding SsdFreeSpace, StringFormat={}{0:F0}}" Foreground="White" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text=" GB free" Foreground="#888" FontSize="13" VerticalAlignment="Bottom" Margin="3,0,10,3"/>
+                            </StackPanel>
                             <ProgressBar Value="{Binding SsdUsedSpace}" Maximum="{Binding SsdTotalSpace}" Width="80" HorizontalAlignment="Left" Height="4" Foreground="#f59e0b" Background="#1C2230" BorderThickness="0" Margin="0,15,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Network Card -->
-                    <Border Grid.Column="5" Background="#151b26" CornerRadius="10" Padding="15">
+                    <Border Grid.Column="6" Background="#151b26" CornerRadius="10" Padding="15">
                         <StackPanel>
                             <TextBlock Text="Network" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
                             <TextBlock Text="{Binding PingLatency, StringFormat={}{0} ms}" Foreground="White" FontSize="18" FontWeight="Bold"/>
@@ -174,7 +205,7 @@
                 </Grid>
 
                 <!-- Mid Section: Charts & Alerts -->
-                <Grid Grid.Row="2" Margin="0,0,0,20">
+                <Grid Grid.Row="1" Margin="0,0,0,20" MinHeight="360">
                     <Grid.Style>
                         <Style TargetType="Grid">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -210,16 +241,31 @@
                             <Grid>
                                 <TextBlock Text="CPU Usage (%)" Foreground="#3b82f6" FontSize="12" VerticalAlignment="Top"/>
                                 <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}%}" Foreground="#3b82f6" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                                <lvc:CartesianChart Background="Transparent" Series="{Binding CpuSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
+                                <lvc:CartesianChart AnimationsSpeed="0:0:0" Background="Transparent" Series="{Binding CpuSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
                             </Grid>
                         </Border>
 
                         <!-- Chart 2: GPU -->
                         <Border Grid.Row="1" Grid.Column="1" Background="#151b26" CornerRadius="8" Padding="10" Margin="0,0,10,10">
                             <Grid>
-                                <TextBlock Text="GPU Usage (%)" Foreground="#a855f7" FontSize="12" VerticalAlignment="Top"/>
-                                <TextBlock Text="{Binding GpuUsage, StringFormat={}{0:F0}%}" Foreground="#a855f7" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                                <lvc:CartesianChart Background="Transparent" Series="{Binding GpuSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
+                                <StackPanel VerticalAlignment="Top">
+                                    <Grid>
+                                        <TextBlock Text="{Binding Gpu0Name}" Foreground="#a855f7" FontSize="11"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding Gpu0Usage, StringFormat={}{0:F0}%}" Foreground="#a855f7" FontSize="12" Margin="0,0,5,0"/>
+                                            <TextBlock Text="{Binding Gpu0Temp, StringFormat={}{0:F0}°C}" Foreground="#666" FontSize="10" VerticalAlignment="Bottom" Margin="0,0,0,1"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <Grid Margin="0,3,0,0" Visibility="{Binding HasGpu1, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="{Binding Gpu1Name}" Foreground="#ef4444" FontSize="11"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding Gpu1Usage, StringFormat={}{0:F0}%}" Foreground="#ef4444" FontSize="12" Margin="0,0,5,0"/>
+                                            <TextBlock Text="{Binding Gpu1Temp, StringFormat={}{0:F0}°C}" Foreground="#666" FontSize="10" VerticalAlignment="Bottom" Margin="0,0,0,1"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                                <lvc:CartesianChart AnimationsSpeed="0:0:0" Background="Transparent" Series="{Binding GpuCombinedSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,35,0,0" TooltipPosition="Hidden"/>
                             </Grid>
                         </Border>
 
@@ -227,7 +273,7 @@
                         <Border Grid.Row="1" Grid.Column="2" Background="#151b26" CornerRadius="8" Padding="10" Margin="0,0,0,10">
                             <Grid>
                                 <TextBlock Text="RAM Usage (%)" Foreground="#4ade80" FontSize="12" VerticalAlignment="Top"/>
-                                <lvc:CartesianChart Background="Transparent" Series="{Binding RamSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
+                                <lvc:CartesianChart AnimationsSpeed="0:0:0" Background="Transparent" Series="{Binding RamSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
                             </Grid>
                         </Border>
 
@@ -235,7 +281,7 @@
                         <Border Grid.Row="2" Grid.Column="0" Background="#151b26" CornerRadius="8" Padding="10" Margin="0,0,10,0">
                             <Grid>
                                 <TextBlock Text="Storage Usage (%)" Foreground="#f59e0b" FontSize="12" VerticalAlignment="Top"/>
-                                <lvc:CartesianChart Background="Transparent" Series="{Binding StorageSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
+                                <lvc:CartesianChart AnimationsSpeed="0:0:0" Background="Transparent" Series="{Binding StorageSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
                             </Grid>
                         </Border>
 
@@ -244,7 +290,7 @@
                             <Grid>
                                 <TextBlock Text="Network Ping (ms)" Foreground="#06b6d4" FontSize="12" VerticalAlignment="Top"/>
                                 <TextBlock Text="{Binding PingLatency, StringFormat={}{0} ms}" Foreground="#06b6d4" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                                <lvc:CartesianChart Background="Transparent" Series="{Binding PingSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
+                                <lvc:CartesianChart AnimationsSpeed="0:0:0" Background="Transparent" Series="{Binding PingSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
                             </Grid>
                         </Border>
 
@@ -253,7 +299,7 @@
                             <Grid>
                                 <TextBlock Text="Network Loss (%)" Foreground="#0ea5e9" FontSize="12" VerticalAlignment="Top"/>
                                 <TextBlock Text="{Binding PacketLoss, StringFormat={}{0:F1}%}" Foreground="#0ea5e9" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                                <lvc:CartesianChart Background="Transparent" Series="{Binding LossSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
+                                <lvc:CartesianChart AnimationsSpeed="0:0:0" Background="Transparent" Series="{Binding LossSeries}" XAxes="{Binding ChartXAxes}" YAxes="{Binding ChartYAxes}" Margin="0,15,0,0" TooltipPosition="Hidden"/>
                             </Grid>
                         </Border>
                     </Grid>
@@ -300,7 +346,7 @@
                 </Grid>
 
                 <!-- Bottom Status -->
-                <Grid Grid.Row="3">
+                <Grid Grid.Row="2" Margin="0,0,0,10">
                     <Grid.Style>
                         <Style TargetType="Grid">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -394,7 +440,7 @@
                 </Grid>
 
                 <!-- Coming Soon View -->
-                <Grid Grid.Row="1" Grid.RowSpan="3">
+                <Grid Grid.Row="0" Grid.RowSpan="3">
                     <Grid.Style>
                         <Style TargetType="Grid">
                             <Setter Property="Visibility" Value="Visible"/>
@@ -413,7 +459,8 @@
                     </StackPanel>
                 </Grid>
 
-            </Grid>
+                </Grid>
+            </ScrollViewer>
         </Grid>
     </Border>
 </Window>

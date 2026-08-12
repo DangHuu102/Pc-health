@@ -24,8 +24,14 @@ public class HardwareMonitorService : IDisposable
     private readonly Computer _computer;
     private readonly UpdateVisitor _updateVisitor;
     private IHardware? _cpu;
-    private IHardware? _gpu;
+    private IHardware? _gpu0;
+    private IHardware? _gpu1;
     private IHardware? _ram;
+    private List<IHardware> _storageList = new();
+
+    public bool HasGpu1 => _gpu1 != null;
+    public string Gpu0Name => _gpu0?.Name ?? "GPU 0";
+    public string Gpu1Name => _gpu1?.Name ?? "GPU 1";
 
     public HardwareMonitorService()
     {
@@ -33,9 +39,13 @@ public class HardwareMonitorService : IDisposable
         {
             IsCpuEnabled = true,
             IsGpuEnabled = true,
-            IsMemoryEnabled = true,
+            IsMemoryEnabled = false,
             IsStorageEnabled = true,
-            IsMotherboardEnabled = true
+            IsMotherboardEnabled = false,
+            IsControllerEnabled = false,
+            IsNetworkEnabled = false,
+            IsBatteryEnabled = false,
+            IsPsuEnabled = false
         };
         
         _updateVisitor = new UpdateVisitor();
@@ -48,16 +58,42 @@ public class HardwareMonitorService : IDisposable
     private void InitializeHardware()
     {
         _cpu = _computer.Hardware.FirstOrDefault(h => h.HardwareType == HardwareType.Cpu);
-        _gpu = _computer.Hardware.FirstOrDefault(h => 
+        
+        var gpus = _computer.Hardware.Where(h => 
             h.HardwareType == HardwareType.GpuNvidia || 
             h.HardwareType == HardwareType.GpuAmd || 
-            h.HardwareType == HardwareType.GpuIntel);
+            h.HardwareType == HardwareType.GpuIntel).ToList();
+            
+        if (gpus.Count > 0) _gpu0 = gpus[0];
+        if (gpus.Count > 1) _gpu1 = gpus[1];
+        
         _ram = _computer.Hardware.FirstOrDefault(h => h.HardwareType == HardwareType.Memory);
+        _storageList = _computer.Hardware.Where(h => h.HardwareType == HardwareType.Storage).ToList();
     }
+
+    private int _tickCount = 0;
+    private List<DriveStatus>? _cachedDrives;
 
     public void Update()
     {
-        try { _computer.Accept(_updateVisitor); } catch { }
+        try
+        {
+            _cpu?.Update();
+            _gpu0?.Update();
+            _gpu1?.Update();
+            _ram?.Update();
+            
+            // Storage SMART polling is very heavy, only do it every 5 ticks (10s)
+            if (_tickCount % 5 == 0)
+            {
+                for (int i = 0; i < _storageList.Count; i++)
+                {
+                    _storageList[i].Update();
+                }
+            }
+            _tickCount++;
+        }
+        catch { }
     }
 
     public (float Temp, float Usage) GetCpuStats()
@@ -65,36 +101,54 @@ public class HardwareMonitorService : IDisposable
         float temp = 0f, usage = 0f;
         if (_cpu != null)
         {
-            var tempSensor = _cpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && s.Name.Contains("Package")) 
-                             ?? _cpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature);
+            // Gather all CPU temperature sensors
+            var tempSensors = _cpu.Sensors.Where(s => s.SensorType == SensorType.Temperature && s.Value.HasValue).ToList();
+            if (tempSensors.Count > 0)
+            {
+                // Prefer "Package", "Core Max", or "Core Average". Otherwise, just take the Max of any core.
+                var packageSensor = tempSensors.FirstOrDefault(s => s.Name.Contains("Package") || s.Name.Contains("Core Max"));
+                if (packageSensor != null && packageSensor.Value.Value > 0)
+                {
+                    temp = packageSensor.Value.Value;
+                }
+                else
+                {
+                    // Fallback to the maximum of any CPU temperature sensor (this usually tracks the hottest core)
+                    temp = tempSensors.Max(s => s.Value.Value);
+                }
+            }
             
             var usageSensor = _cpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name.Contains("Total"))
                               ?? _cpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load);
             
-            if (tempSensor?.Value != null) temp = tempSensor.Value.Value;
             if (usageSensor?.Value != null) usage = usageSensor.Value.Value;
         }
         
-        // Fallback to motherboard temp if CPU temp is 0
-        if (temp == 0f)
+        // Fallback to Embedded Controller or Motherboard if CPU sensors fail (common on laptops)
+        if (temp <= 0f)
         {
-            var mb = _computer.Hardware.FirstOrDefault(h => h.HardwareType == HardwareType.Motherboard);
-            var mbTemp = mb?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature);
-            if (mbTemp?.Value != null) temp = mbTemp.Value.Value;
+            var ec = _computer.Hardware.FirstOrDefault(h => h.HardwareType == HardwareType.EmbeddedController || h.HardwareType == HardwareType.SuperIO || h.HardwareType == HardwareType.Motherboard);
+            if (ec != null)
+            {
+                ec.Update();
+                var cpuTempSensor = ec.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && (s.Name.Contains("CPU") || s.Name.Contains("Core")));
+                if (cpuTempSensor == null) cpuTempSensor = ec.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature);
+                if (cpuTempSensor?.Value != null) temp = cpuTempSensor.Value.Value;
+            }
         }
 
         return (temp, usage);
     }
 
-    public (float Temp, float Load, float VramUsed) GetGpuStats()
+    private (float Temp, float Load, float VramUsed) GetStatsForGpu(IHardware? gpu)
     {
         float temp = 0f, load = 0f, vram = 0f;
-        if (_gpu != null)
+        if (gpu != null)
         {
-            var tempSensor = _gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature);
-            var loadSensor = _gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name.Contains("Core"))
-                             ?? _gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load);
-            var vramSensor = _gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.SmallData && s.Name.Contains("Memory Used"));
+            var tempSensor = gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature);
+            var loadSensor = gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name.Contains("Core"))
+                             ?? gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Load);
+            var vramSensor = gpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.SmallData && s.Name.Contains("Memory Used"));
             
             if (tempSensor?.Value != null) temp = tempSensor.Value.Value;
             if (loadSensor?.Value != null) load = loadSensor.Value.Value;
@@ -102,6 +156,9 @@ public class HardwareMonitorService : IDisposable
         }
         return (temp, load, vram);
     }
+
+    public (float Temp, float Load, float VramUsed) GetGpu0Stats() => GetStatsForGpu(_gpu0);
+    public (float Temp, float Load, float VramUsed) GetGpu1Stats() => GetStatsForGpu(_gpu1);
 
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     private struct MEMORYSTATUSEX
@@ -135,6 +192,11 @@ public class HardwareMonitorService : IDisposable
 
     public List<DriveStatus> GetDrivesStats()
     {
+        // Return cached drives to avoid heavy I/O polling every 2 seconds.
+        // We update the cache only right after Update() triggers a storage SMART update.
+        if (_tickCount % 5 != 1 && _cachedDrives != null) 
+            return _cachedDrives;
+
         var list = new List<DriveStatus>();
         
         try
@@ -226,6 +288,7 @@ public class HardwareMonitorService : IDisposable
             list.Add(new DriveStatus { Name = "Drive C:", TotalGB = 512, FreeGB = 92, Health = 96, Temp = 40 });
         }
 
+        _cachedDrives = list;
         return list;
     }
 
