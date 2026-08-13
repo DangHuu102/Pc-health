@@ -65,6 +65,7 @@
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     
                     <!-- Health Score Card -->
@@ -195,11 +196,19 @@
                     </Border>
 
                     <!-- Network Card -->
-                    <Border Grid.Column="6" Background="#151b26" CornerRadius="10" Padding="15">
+                    <Border Grid.Column="6" Background="#151b26" CornerRadius="10" Padding="15" Margin="0,0,10,0">
                         <StackPanel>
                             <TextBlock Text="Network" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
                             <TextBlock Text="{Binding PingLatency, StringFormat={}{0} ms}" Foreground="White" FontSize="18" FontWeight="Bold"/>
                             <ProgressBar Value="{Binding PingLatency}" Maximum="200" Width="80" HorizontalAlignment="Left" Height="4" Foreground="#06b6d4" Background="#1C2230" BorderThickness="0" Margin="0,15,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Uptime Card -->
+                    <Border Grid.Column="7" Background="#151b26" CornerRadius="10" Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="Uptime" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding SystemUptime}" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,3,0,0"/>
                         </StackPanel>
                     </Border>
                 </Grid>

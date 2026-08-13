@@ -51,6 +51,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private double _packetLoss;
     [ObservableProperty] private double _downloadMbps;
     [ObservableProperty] private double _uploadMbps;
+
+    [ObservableProperty] private string _systemUptime = "00:00:00";
+
+
     [ObservableProperty] private bool _isAppActive = true;
 
     [ObservableProperty] private ObservableCollection<WarningAlert> _systemAlerts = new();
@@ -305,6 +309,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             PacketLoss = netStats.PacketLoss;
             DownloadMbps = netStats.DownloadMbps;
             UploadMbps = netStats.UploadMbps;
+
+            var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+            SystemUptime = $"{(int)uptime.TotalDays}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s";
 
             HealthScore = _healthAnalyzer.CalculateHealthScore(
                 SsdHealth, SsdFreeSpace, SsdTotalSpace,
