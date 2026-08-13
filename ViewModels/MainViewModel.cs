@@ -228,7 +228,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _isPolling = true;
             float cpuTemp = 45f, cpuUsage = 0f;
-            float gpuTemp = 40f, gpuUsage = 0f, gpuVram = 0f;
             float ramUsed = 0f, ramTotal = 16f;
             List<DriveStatus>? drives = null;
             

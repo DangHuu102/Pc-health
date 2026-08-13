@@ -43,7 +43,7 @@ public static class MemoryHelper
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool LookupPrivilegeValue(string lpSystemName, string lpName, out LUID lpLuid);
+    private static extern bool LookupPrivilegeValue(string? lpSystemName, string lpName, out LUID lpLuid);
 
     [DllImport("advapi32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

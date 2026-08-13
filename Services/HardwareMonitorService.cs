@@ -107,14 +107,14 @@ public class HardwareMonitorService : IDisposable
             {
                 // Prefer "Package", "Core Max", or "Core Average". Otherwise, just take the Max of any core.
                 var packageSensor = tempSensors.FirstOrDefault(s => s.Name.Contains("Package") || s.Name.Contains("Core Max"));
-                if (packageSensor != null && packageSensor.Value.Value > 0)
+                if (packageSensor != null && packageSensor.Value.GetValueOrDefault() > 0)
                 {
-                    temp = packageSensor.Value.Value;
+                    temp = packageSensor.Value.GetValueOrDefault();
                 }
                 else
                 {
                     // Fallback to the maximum of any CPU temperature sensor (this usually tracks the hottest core)
-                    temp = tempSensors.Max(s => s.Value.Value);
+                    temp = tempSensors.Max(s => s.Value.GetValueOrDefault());
                 }
             }
             
