@@ -65,7 +65,7 @@
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="0.85*"/>
                     </Grid.ColumnDefinitions>
                     
                     <!-- Health Score Card -->
@@ -205,10 +205,10 @@
                     </Border>
 
                     <!-- Uptime Card -->
-                    <Border Grid.Column="7" Background="#151b26" CornerRadius="10" Padding="15">
+                    <Border Grid.Column="7" Background="#151b26" CornerRadius="10" Padding="10,15">
                         <StackPanel>
-                            <TextBlock Text="Uptime" Foreground="#AAA" FontSize="13" Margin="0,0,0,5"/>
-                            <TextBlock Text="{Binding SystemUptime}" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,3,0,0"/>
+                            <TextBlock Text="Uptime" Foreground="#AAA" FontSize="11" Margin="0,0,0,2"/>
+                            <TextBlock Text="{Binding SystemUptime}" Foreground="White" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
                 </Grid>
