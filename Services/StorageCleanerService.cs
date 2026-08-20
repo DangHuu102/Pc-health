@@ -39,6 +39,15 @@ public class StorageCleanerService
         // Scan Recycle Bin for the specific drive
         junkDirectories.Add((Path.Combine(driveLetter, "$Recycle.Bin"), "Recycle Bin"));
 
+        // Riot Games Logs
+        if (driveLetter.StartsWith("C", StringComparison.OrdinalIgnoreCase))
+        {
+            junkDirectories.Add((Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Client", "Logs"), "Riot Client Logs"));
+            junkDirectories.Add((Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Install Logs"), "Riot Install Logs"));
+        }
+        junkDirectories.Add((Path.Combine(driveLetter, "Riot Games", "League of Legends", "Logs"), "League of Legends Logs"));
+        junkDirectories.Add((Path.Combine(driveLetter, "Riot Games", "VALORANT", "live", "ShooterGame", "Saved", "Logs"), "VALORANT Logs"));
+
         foreach (var dir in junkDirectories)
         {
             if (token.IsCancellationRequested) break;
@@ -83,10 +92,10 @@ public class StorageCleanerService
 
         try
         {
-            // Recursive scan for all files in the directory
-            var allFiles = Directory.GetFiles(searchDirectory, "*", SearchOption.AllDirectories);
+            // Recursive scan for all files in the directory safely
+            var allFiles = SafeEnumerateFiles(searchDirectory).ToList();
             
-            int total = allFiles.Length;
+            int total = allFiles.Count;
             int current = 0;
 
             foreach (var file in allFiles)
@@ -191,5 +200,42 @@ public class StorageCleanerService
         }
 
         return (successCount, bytesFreed);
+    }
+
+    private IEnumerable<string> SafeEnumerateFiles(string path)
+    {
+        Queue<string> queue = new Queue<string>();
+        queue.Enqueue(path);
+        while (queue.Count > 0)
+        {
+            path = queue.Dequeue();
+            try
+            {
+                foreach (string subDir in Directory.GetDirectories(path))
+                {
+                    queue.Enqueue(subDir);
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore inaccessible directories
+            }
+            string[]? files = null;
+            try
+            {
+                files = Directory.GetFiles(path);
+            }
+            catch (Exception)
+            {
+                // Ignore inaccessible directories
+            }
+            if (files != null)
+            {
+                foreach (string t in files)
+                {
+                    yield return t;
+                }
+            }
+        }
     }
 }
