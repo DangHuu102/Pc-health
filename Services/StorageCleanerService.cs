@@ -204,11 +204,29 @@ public class StorageCleanerService
 
     private IEnumerable<string> SafeEnumerateFiles(string path)
     {
+        var forbiddenFolders = new[]
+        {
+            "\\Windows",
+            "\\Program Files",
+            "\\Program Files (x86)",
+            "\\ProgramData",
+            "\\AppData",
+            "\\$Recycle.Bin",
+            "\\System Volume Information"
+        };
+
         Queue<string> queue = new Queue<string>();
         queue.Enqueue(path);
         while (queue.Count > 0)
         {
             path = queue.Dequeue();
+            
+            // Skip forbidden folders
+            if (forbiddenFolders.Any(f => path.Contains(f, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
             try
             {
                 foreach (string subDir in Directory.GetDirectories(path))

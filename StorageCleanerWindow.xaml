@@ -73,6 +73,7 @@
                     <TextBlock Text="{Binding StatusMessage}" Foreground="#AAA" FontSize="12" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <CheckBox Content="Chọn tất cả" IsChecked="{Binding SelectAll}" Foreground="#AAA" Margin="0,0,25,0" VerticalAlignment="Center"/>
                     <TextBlock Text="Dung lượng chọn xóa:" Foreground="#AAA" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <TextBlock Text="{Binding TotalSizeString}" Foreground="#ef4444" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0"/>
                     <Button Content="Xóa mục đã chọn" Command="{Binding RemoveSelectedCommand}" Width="130" Height="32" Background="#ef4444" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="Bold"/>

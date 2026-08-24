@@ -22,6 +22,21 @@ public partial class StorageCleanerViewModel : ObservableObject
     [ObservableProperty] private bool _isScanning;
     [ObservableProperty] private bool _isCleaning;
     [ObservableProperty] private string _statusMessage = "Sẵn sàng";
+
+    private bool _selectAll = true;
+    public bool SelectAll
+    {
+        get => _selectAll;
+        set
+        {
+            SetProperty(ref _selectAll, value);
+            foreach (var item in Items)
+            {
+                item.IsSelected = value;
+            }
+            UpdateTotalSize();
+        }
+    }
     
     [ObservableProperty] private long _totalSizeToClean;
     public string TotalSizeString => TotalSizeToClean > 1024 * 1024 * 1024 ? 
