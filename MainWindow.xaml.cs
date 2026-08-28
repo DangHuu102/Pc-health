@@ -18,6 +18,39 @@ public partial class MainWindow : Window
         
         this.SourceInitialized += MainWindow_SourceInitialized;
         this.Closed += MainWindow_Closed;
+        
+        Task.Run(AutoCleanTempFilesAsync);
+    }
+
+    private async Task AutoCleanTempFilesAsync()
+    {
+        var tempPaths = new List<string>
+        {
+            Path.GetTempPath(), // User Temp
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"), // Windows Temp
+            @"C:\Temp",
+            @"D:\Temp"
+        };
+
+        foreach (var tempPath in tempPaths)
+        {
+            if (Directory.Exists(tempPath))
+            {
+                try
+                {
+                    var files = Directory.GetFiles(tempPath, "*", SearchOption.AllDirectories);
+                    foreach (var file in files)
+                    {
+                        try
+                        {
+                            File.Delete(file);
+                        }
+                        catch { } // Ignore locked files
+                    }
+                }
+                catch { }
+            }
+        }
     }
 
     private void MainWindow_SourceInitialized(object? sender, EventArgs e)
