@@ -182,6 +182,71 @@ public class StorageCleanerService
         return items;
     }
 
+    public async Task<List<CleanableItem>> ScanDeepJunkAsync(Action<string> progressCallback, CancellationToken token)
+    {
+        var items = new List<CleanableItem>();
+        
+        var targetDirectories = new List<string>
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+        };
+
+        var junkExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".tmp", ".log", ".bak", ".old", ".dmp", ".crash"
+        };
+        
+        var protectedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".pdf", ".txt", ".rtf", ".exe", ".dll", ".sys"
+        };
+
+        foreach (var dir in targetDirectories)
+        {
+            if (token.IsCancellationRequested) break;
+            
+            progressCallback?.Invoke($"Đang quét chuyên sâu: {Path.GetFileName(dir)}");
+            
+            if (Directory.Exists(dir))
+            {
+                try
+                {
+                    // Use SafeEnumerateFiles to avoid crashes
+                    var allFiles = SafeEnumerateFiles(dir);
+                    foreach (var file in allFiles)
+                    {
+                        if (token.IsCancellationRequested) break;
+                        try
+                        {
+                            var ext = Path.GetExtension(file);
+                            
+                            // Skip protected files immediately
+                            if (protectedExtensions.Contains(ext)) continue;
+                            
+                            // If it's a known junk extension, add it
+                            if (junkExtensions.Contains(ext))
+                            {
+                                var info = new FileInfo(file);
+                                items.Add(new CleanableItem
+                                {
+                                    Path = file,
+                                    SizeBytes = info.Length,
+                                    Category = "Rác chuyên sâu",
+                                    IsSelected = true
+                                });
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                catch { }
+            }
+        }
+
+        return items;
+    }
+
     public async Task<(int successCount, long bytesFreed)> DeleteFilesAsync(IEnumerable<CleanableItem> files, Action<string> progressCallback)
     {
         int successCount = 0;

@@ -43,6 +43,7 @@
                 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button Content="Quét rác hệ thống" Command="{Binding ScanJunkCommand}" Width="130" Height="30" Background="#3b82f6" Foreground="White" BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" FontWeight="SemiBold"/>
+                    <Button Content="Quét chuyên sâu" Command="{Binding ScanDeepCleanCommand}" Width="130" Height="30" Background="#8b5cf6" Foreground="White" BorderThickness="0" Margin="0,0,10,0" Cursor="Hand" FontWeight="SemiBold"/>
                     <Button Content="Quét file trùng lặp" Command="{Binding ScanDuplicatesCommand}" Width="130" Height="30" Background="#f59e0b" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"/>
                 </StackPanel>
             </Grid>

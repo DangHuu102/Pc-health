@@ -140,6 +140,43 @@ public partial class StorageCleanerViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task ScanDeepClean()
+    {
+        if (IsScanning || IsCleaning) return;
+        
+        IsScanning = true;
+        Items.Clear();
+        UpdateTotalSize();
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            var results = await Task.Run(() => 
+                _cleanerService.ScanDeepJunkAsync(msg => 
+                {
+                    Application.Current.Dispatcher.Invoke(() => StatusMessage = msg);
+                }, _cts.Token)
+            );
+
+            foreach (var item in results)
+            {
+                Items.Add(item);
+            }
+            
+            StatusMessage = $"Quét chuyên sâu hoàn tất. Tìm thấy {Items.Count} mục.";
+            UpdateTotalSize();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Lỗi: {ex.Message}";
+        }
+        finally
+        {
+            IsScanning = false;
+        }
+    }
+
+    [RelayCommand]
     private void Cancel()
     {
         _cts?.Cancel();
