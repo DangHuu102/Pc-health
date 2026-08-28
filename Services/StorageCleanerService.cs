@@ -212,7 +212,16 @@ public class StorageCleanerService
             "\\ProgramData",
             "\\AppData",
             "\\$Recycle.Bin",
-            "\\System Volume Information"
+            "\\System Volume Information",
+            "\\.nuget",
+            "\\.vs",
+            "\\.vscode",
+            "\\.gradle"
+        };
+
+        var safeExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".exe", ".dll", ".sys", ".ini", ".config", ".xml", ".json", ".dat", ".db", ".sqlite"
         };
 
         Queue<string> queue = new Queue<string>();
@@ -251,6 +260,12 @@ public class StorageCleanerService
             {
                 foreach (string t in files)
                 {
+                    // Skip critical application files
+                    var ext = Path.GetExtension(t);
+                    if (safeExtensions.Contains(ext))
+                    {
+                        continue;
+                    }
                     yield return t;
                 }
             }
