@@ -281,12 +281,23 @@ public class StorageCleanerService
             "\\.nuget",
             "\\.vs",
             "\\.vscode",
-            "\\.gradle"
+            "\\.gradle",
+            "\\anaconda3",
+            "\\miniconda3",
+            "\\node_modules",
+            "\\SteamLibrary",
+            "\\Steam",
+            "\\Epic Games",
+            "\\Riot Games",
+            "\\Ubisoft",
+            "\\Origin Games",
+            "\\GOG Galaxy"
         };
 
         var safeExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            ".exe", ".dll", ".sys", ".ini", ".config", ".xml", ".json", ".dat", ".db", ".sqlite"
+            ".exe", ".dll", ".sys", ".ini", ".config", ".xml", ".json", ".dat", ".db", ".sqlite",
+            ".py", ".pyc", ".pyd", ".whl", ".so"
         };
 
         Queue<string> queue = new Queue<string>();
