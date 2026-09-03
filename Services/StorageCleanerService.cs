@@ -175,11 +175,18 @@ public class StorageCleanerService
                     bool isFirst = true;
                     foreach (var file in hashGroup.Value)
                     {
+                        string ext = Path.GetExtension(file).ToLower();
+                        string category = "Khác";
+                        if (new[] { ".zip", ".rar", ".7z", ".iso" }.Contains(ext)) category = "File nén (Lưu trữ)";
+                        else if (new[] { ".msi", ".cab", ".apk" }.Contains(ext)) category = "Bộ cài đặt phần mềm";
+                        else if (new[] { ".jpg", ".jpeg", ".png", ".bmp", ".gif" }.Contains(ext)) category = "Hình ảnh";
+                        else if (new[] { ".mp4", ".mkv", ".avi", ".mov", ".mp3", ".wav" }.Contains(ext)) category = "Media (Video/Âm thanh)";
+
                         items.Add(new CleanableItem
                         {
                             Path = file,
                             SizeBytes = group.Key,
-                            Category = "File trùng lặp",
+                            Category = $"Trùng lặp: {category}",
                             IsSelected = !isFirst // Select all duplicates EXCEPT the first one
                         });
                         isFirst = false;
