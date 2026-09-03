@@ -14,6 +14,9 @@ Whether you are gaming, rendering, or simply keeping an eye on your system, PC H
 - **🎨 Premium UI/UX:** Features a sleek, modern dark mode with glassmorphism elements, dynamic gradients, and smooth sparkline charts built with `LiveCharts2`.
 - **📌 KittyWindow (Floating Widget):** Includes a compact, always-on-top, translucent widget. The widget syncs flawlessly with the main dashboard, allowing you to monitor your system seamlessly while inside other full-screen apps or games.
 - **⚡ Zero Lag & Low Overhead:** Highly optimized asynchronous data polling ensures smooth updates without bogging down your machine.
+- **🧹 Deep Clean (Quét chuyên sâu):** Intelligently targets hidden junk files (`.tmp`, `.log`, `.crash`) left behind by uninstalled apps deep within `AppData`, safely bypassing critical documents and executables.
+- **🧠 Hybrid Duplicate Scanner:** A pro-grade algorithm that uses a dual-filter system to safely reclaim space. It targets media and archives universally, while using Cross-Directory detection to find orphaned game installations (like `Windows.old`) without breaking active game files.
+- **♻️ Auto-Clean Temp:** Silently wipes temporary system files in the background every time the app launches, ensuring your PC starts fresh.
 
 ---
 
@@ -41,7 +44,7 @@ Whether you are gaming, rendering, or simply keeping an eye on your system, PC H
 
 ### Prerequisites
 - Windows 10 or Windows 11
-- [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+- [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 - The app must be run as **Administrator** so that `LibreHardwareMonitor` can access low-level CPU/GPU hardware sensors.
 
 ### Build from source
