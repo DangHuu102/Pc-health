@@ -88,12 +88,22 @@ public class StorageCleanerService
         var items = new List<CleanableItem>();
         var filesBySize = new Dictionary<long, List<string>>();
 
+        var targetDuplicateExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".zip", ".rar", ".7z", ".iso", ".msi", ".cab", ".apk",
+            ".jpg", ".jpeg", ".png", ".bmp", ".gif",
+            ".mp4", ".mkv", ".avi", ".mov", ".mp3", ".wav"
+        };
+
         progressCallback?.Invoke("Đang tìm kiếm file...");
 
         try
         {
             // Recursive scan for all files in the directory safely
-            var allFiles = SafeEnumerateFiles(searchDirectory).ToList();
+            var allFilesRaw = SafeEnumerateFiles(searchDirectory).ToList();
+            
+            // Apply Whitelist Filter
+            var allFiles = allFilesRaw.Where(f => targetDuplicateExtensions.Contains(Path.GetExtension(f))).ToList();
             
             int total = allFiles.Count;
             int current = 0;
@@ -287,12 +297,6 @@ public class StorageCleanerService
             "\\node_modules"
         };
 
-        var safeExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".exe", ".dll", ".sys", ".ini", ".config", ".xml", ".json", ".dat", ".db", ".sqlite",
-            ".py", ".pyc", ".pyd", ".whl", ".so"
-        };
-
         Queue<string> queue = new Queue<string>();
         queue.Enqueue(path);
         while (queue.Count > 0)
@@ -329,12 +333,6 @@ public class StorageCleanerService
             {
                 foreach (string t in files)
                 {
-                    // Skip critical application files
-                    var ext = Path.GetExtension(t);
-                    if (safeExtensions.Contains(ext))
-                    {
-                        continue;
-                    }
                     yield return t;
                 }
             }
