@@ -88,7 +88,7 @@ public class StorageCleanerService
         var items = new List<CleanableItem>();
         var filesBySize = new Dictionary<long, List<string>>();
 
-        var targetDuplicateExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        var mediaExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             ".zip", ".rar", ".7z", ".iso", ".msi", ".cab", ".apk",
             ".jpg", ".jpeg", ".png", ".bmp", ".gif",
@@ -100,10 +100,7 @@ public class StorageCleanerService
         try
         {
             // Recursive scan for all files in the directory safely
-            var allFilesRaw = SafeEnumerateFiles(searchDirectory).ToList();
-            
-            // Apply Whitelist Filter
-            var allFiles = allFilesRaw.Where(f => targetDuplicateExtensions.Contains(Path.GetExtension(f))).ToList();
+            var allFiles = SafeEnumerateFiles(searchDirectory).ToList();
             
             int total = allFiles.Count;
             int current = 0;
@@ -171,17 +168,47 @@ public class StorageCleanerService
                 // Add confirmed duplicates to the list
                 foreach (var hashGroup in hashGroups.Where(hg => hg.Value.Count > 1))
                 {
+                    // HYBRID SCANNER LOGIC
+                    string sampleExt = Path.GetExtension(hashGroup.Value.First()).ToLower();
+                    bool isMedia = mediaExtensions.Contains(sampleExt);
+                    string category = "Khác";
+
+                    if (isMedia)
+                    {
+                        // Luồng 1: Media/Archives -> Always flag as duplicates
+                        if (new[] { ".zip", ".rar", ".7z", ".iso" }.Contains(sampleExt)) category = "File nén (Lưu trữ)";
+                        else if (new[] { ".msi", ".cab", ".apk" }.Contains(sampleExt)) category = "Bộ cài đặt phần mềm";
+                        else if (new[] { ".jpg", ".jpeg", ".png", ".bmp", ".gif" }.Contains(sampleExt)) category = "Hình ảnh";
+                        else if (new[] { ".mp4", ".mkv", ".avi", ".mov", ".mp3", ".wav" }.Contains(sampleExt)) category = "Media (Video/Âm thanh)";
+                    }
+                    else
+                    {
+                        // Luồng 2: Core Files (Games, Apps, DLLs) -> Cross-Directory Check
+                        var rootPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var f in hashGroup.Value)
+                        {
+                            var parts = f.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+                            if (parts.Length >= 2)
+                            {
+                                rootPaths.Add(parts[0] + Path.DirectorySeparatorChar + parts[1]); // e.g. "C:\Games" or "C:\Windows.old"
+                            }
+                            else if (parts.Length == 1)
+                            {
+                                rootPaths.Add(parts[0]);
+                            }
+                        }
+
+                        // Nếu tất cả các file nằm chung trong 1 cấu trúc thư mục mẹ (ví dụ C:\Games) -> Bỏ qua để bảo vệ Game
+                        if (rootPaths.Count <= 1) continue;
+
+                        // Nếu nằm ở các thư mục mẹ khác nhau (VD: C:\Games và C:\Windows.old) -> Là file cài đè mồ côi
+                        category = "File Game/App cài đè (Mồ côi)";
+                    }
+
                     // Keep the first one, mark the rest for deletion
                     bool isFirst = true;
                     foreach (var file in hashGroup.Value)
                     {
-                        string ext = Path.GetExtension(file).ToLower();
-                        string category = "Khác";
-                        if (new[] { ".zip", ".rar", ".7z", ".iso" }.Contains(ext)) category = "File nén (Lưu trữ)";
-                        else if (new[] { ".msi", ".cab", ".apk" }.Contains(ext)) category = "Bộ cài đặt phần mềm";
-                        else if (new[] { ".jpg", ".jpeg", ".png", ".bmp", ".gif" }.Contains(ext)) category = "Hình ảnh";
-                        else if (new[] { ".mp4", ".mkv", ".avi", ".mov", ".mp3", ".wav" }.Contains(ext)) category = "Media (Video/Âm thanh)";
-
                         items.Add(new CleanableItem
                         {
                             Path = file,
