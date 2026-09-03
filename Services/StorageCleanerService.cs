@@ -284,14 +284,7 @@ public class StorageCleanerService
             "\\.gradle",
             "\\anaconda3",
             "\\miniconda3",
-            "\\node_modules",
-            "\\SteamLibrary",
-            "\\Steam",
-            "\\Epic Games",
-            "\\Riot Games",
-            "\\Ubisoft",
-            "\\Origin Games",
-            "\\GOG Galaxy"
+            "\\node_modules"
         };
 
         var safeExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
